@@ -73,6 +73,6 @@ while True:
             bot.send_message(chat_id, token + " price " + direction + " " + str(price_new) + " USD")
             logging.debug("Alert #" + str(alert_id) + " sent")
             delete_query("alerts", "id = " + str(alert_id))
-            logging.debug("1Alert #" + str(alert_id) + " removed")
+            logging.debug("Alert #" + str(alert_id) + " removed")
 
     time.sleep(10)
