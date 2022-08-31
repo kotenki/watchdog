@@ -1,1 +1,0 @@
-tokens_dict = {"bitcoin": "BTC", "cosmos": "ATOM", "polkadot": "DOT"}

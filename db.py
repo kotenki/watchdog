@@ -22,9 +22,9 @@ c.execute("""
 
 # ============================
 # Populating with test data:
-c.execute('INSERT INTO pricelog (token) values ("BTC")')
-c.execute('INSERT INTO pricelog (token) values ("ATOM")')
-c.execute('INSERT INTO pricelog (token) values ("DOT")')
+c.execute('INSERT INTO pricelog values ("BTC", 0, 0)')
+c.execute('INSERT INTO pricelog values ("ATOM", 0, 0)')
+c.execute('INSERT INTO pricelog values ("DOT", 0, 0)')
 
 c.execute('INSERT INTO alerts values (1, 914202, "BTC", 19999)')
 c.execute('INSERT INTO alerts values (2, 914202, "ATOM", 12.1)')
