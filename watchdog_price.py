@@ -5,8 +5,9 @@ import logging
 import sqlite3 as sl
 import telebot
 from pycoingecko import CoinGeckoAPI
+from keys import TG_API_KEY
 
-bot = telebot.TeleBot("5725691758:AAHhVhKMr4g6jP3f2zmVepnXJLcllLF7O9c")
+bot = telebot.TeleBot(TG_API_KEY)
 logging.basicConfig(filename="debug.log", level=logging.DEBUG, format="%(asctime)s %(message)s", filemode="w")
 conn = sl.connect("watchdog.db")
 c = conn.cursor()
@@ -26,7 +27,7 @@ def update_price_log(prices_data):
 
 def delete_query(table, condition):
     c.execute("DELETE FROM " + table + " WHERE " + condition)
-    conn.commit()
+    conn.commit() 
 
 
 def select_query(table, condition): 
