@@ -1,7 +1,5 @@
-#from distutils.log import debug
 import time
 import logging
-#from datetime import datetime
 import sqlite3 as sl
 import telebot
 from pycoingecko import CoinGeckoAPI
