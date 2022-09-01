@@ -48,7 +48,7 @@ while True:
             else:
                 direction = "has dropped to"
 
-            bot.send_message(chat_id, token + " price " + direction + " " + str(price_new) + " USD")
+            bot.send_message(chat_id, token + " price " + direction + " " + str(price_new) + " $")
             logging.debug("Alert #" + str(alert_id) + " sent")
             c.execute(delete_query("alerts", "id = " + str(alert_id)))
             conn.commit()
