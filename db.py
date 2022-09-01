@@ -20,6 +20,16 @@ c.execute("""
         );
     """)
 
+
+c.execute("""
+        CREATE TABLE bot_price_scenario (
+            chat_id INTEGER,
+            alert_id INTEGER,
+            nextstep INTEGER,
+            PRIMARY KEY (chat_id, alert_id) 
+        );
+    """)
+
 # ============================
 # Populating with test data:
 c.execute('INSERT INTO pricelog values ("BTC", 0, 0)')
