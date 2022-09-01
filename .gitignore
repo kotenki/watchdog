@@ -1,3 +1,5 @@
 keys.py
 debug.log
 watchdog.db
+backup.py
+__pycache__

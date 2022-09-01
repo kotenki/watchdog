@@ -8,7 +8,3 @@ def select_query(table, condition):
 
 def update_query(table, column, value, condition):
     return ("UPDATE " + table + " SET " + column + " = " + value + " WHERE " + condition)
-
-
-def test():
-    print("test successful")
