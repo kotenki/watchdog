@@ -11,6 +11,7 @@ GET_PRICE_NEW_BY_TOKEN = "SELECT price_new FROM pricelog WHERE token = ?;"
 GET_ALERTS_BY_TARGET_PRICE_NOT_NULL = "SELECT * FROM alerts WHERE target_price IS NOT NULL;"
 GET_PRICELOG_BY_TOKEN = "SELECT * FROM pricelog WHERE token = ?;"
 GET_ALERTS_BY_CHAT_ID = "SELECT * FROM alerts WHERE chat_id = ? ORDER BY ID;"
+GET_PREALERT_WITH_STATE_1 = "SELECT * FROM prealerts where chat_id = ? and state = 1"
 
 SET_PRICE_OLD_TO_PRICE_NEW_BY_TOKEN = "UPDATE pricelog SET price_old = price_new WHERE token = ?;"
 SET_PRICE_NEW_BY_TOKEN = "UPDATE pricelog SET price_new = ? WHERE token = ?;"
@@ -109,3 +110,8 @@ def del_prealerts_by_chat_id(connection, chat_id):
 def get_alerts_by_chat_id(connection, chat_id):
     with connection:
         return connection.execute(GET_ALERTS_BY_CHAT_ID, (chat_id,)).fetchall()
+
+
+def get_prealert_with_state_1(connection, chat_id):
+    with connection:
+        return connection.execute(GET_PREALERT_WITH_STATE_1, (chat_id,)).fetchall()

@@ -45,10 +45,14 @@ def parse_token(msg):
 
     token = token_supported(msg.text)
 
+    if len(database.get_prealert_with_state_1(connection, msg.chat.id)) == 0:
+        bot.send_message(msg.chat.id, 'Oops! You should use /start command to add an alert')
+        return None
+
     try: 
         current_price = database.get_price_new_by_token(connection, token)[0][0]
     except Exception as e:
-        bot.send_message(msg.chat.id, "Token " + msg.text + " is not supported. Try again!")
+        bot.send_message(msg.chat.id, "Token " + msg.text + " is not supported. Try again with /start command!")
         return None 
     
     database.set_prealert_state_2(connection, token, str(msg.chat.id))
@@ -60,9 +64,19 @@ def parse_token(msg):
 @bot.message_handler(regexp = "[0-9]")
 def parse_price(msg):
     # if token not null and state = 2
-    token = database.get_prealert_token_by_chat_id_and_state(connection, str(msg.chat.id), 2)[0][0]
+    # Exception Handling:
+    # token = database.get_prealert_token_by_chat_id_and_state(connection, str(msg.chat.id), 2)[0][0]
+    # IndexError: list index out of range
+    # if out of range exception -> msg "Please use start command if you want yo add a new alert" 
+    try: 
+        token = database.get_prealert_token_by_chat_id_and_state(connection, str(msg.chat.id), 2)[0][0]
+    except Exception as e:
+        if "list index out of range" in str(e):
+            bot.send_message(msg.chat.id, 'Oops! You should use /start command to add an alert')
+            return None
 
-    if int(msg.text) <= 0: 
+
+    if float(msg.text) <= 0: 
          bot.send_message(msg.chat.id, 'Please type a valid price')
          return None
 
