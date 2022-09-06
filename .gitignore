@@ -2,6 +2,6 @@ keys.py
 data.db
 watchdog.log
 bot.log
-nohup
+nohup.out
 __pycache__
 old
