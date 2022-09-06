@@ -68,6 +68,7 @@ def parse_price(msg):
     # token = database.get_prealert_token_by_chat_id_and_state(connection, str(msg.chat.id), 2)[0][0]
     # IndexError: list index out of range
     # if out of range exception -> msg "Please use start command if you want yo add a new alert" 
+    
     try: 
         token = database.get_prealert_token_by_chat_id_and_state(connection, str(msg.chat.id), 2)[0][0]
     except Exception as e:

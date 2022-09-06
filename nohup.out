@@ -138,3 +138,51 @@ Traceback (most recent call last):
   File "bot.py", line 48, in parse_token
     print(database.get_prealert_with_state_1(msg.chat.id))
 TypeError: get_prealert_with_state_1() missing 1 required positional argument: 'chat_id'
+Traceback (most recent call last):
+  File "bot.py", line 98, in <module>
+    bot.polling()
+  File "/usr/local/lib/python3.8/dist-packages/telebot/__init__.py", line 946, in polling
+    self.__threaded_polling(non_stop=non_stop, interval=interval, timeout=timeout, long_polling_timeout=long_polling_timeout,
+  File "/usr/local/lib/python3.8/dist-packages/telebot/__init__.py", line 1021, in __threaded_polling
+    raise e
+  File "/usr/local/lib/python3.8/dist-packages/telebot/__init__.py", line 977, in __threaded_polling
+    self.worker_pool.raise_exceptions()
+  File "/usr/local/lib/python3.8/dist-packages/telebot/util.py", line 154, in raise_exceptions
+    raise self.exception_info
+  File "/usr/local/lib/python3.8/dist-packages/telebot/util.py", line 98, in run
+    task(*args, **kwargs)
+  File "bot.py", line 73, in parse_price
+    token = database.get_prealert_token_by_chat_id_and_state(connection, str(msg.chat.id), 2)[0][0]
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "bot.py", line 102, in <module>
+    bot.polling()
+  File "/usr/local/lib/python3.8/dist-packages/telebot/__init__.py", line 946, in polling
+    self.__threaded_polling(non_stop=non_stop, interval=interval, timeout=timeout, long_polling_timeout=long_polling_timeout,
+  File "/usr/local/lib/python3.8/dist-packages/telebot/__init__.py", line 1021, in __threaded_polling
+    raise e
+  File "/usr/local/lib/python3.8/dist-packages/telebot/__init__.py", line 977, in __threaded_polling
+    self.worker_pool.raise_exceptions()
+  File "/usr/local/lib/python3.8/dist-packages/telebot/util.py", line 154, in raise_exceptions
+    raise self.exception_info
+  File "/usr/local/lib/python3.8/dist-packages/telebot/util.py", line 98, in run
+    task(*args, **kwargs)
+  File "bot.py", line 73, in parse_price
+    token = database.get_prealert_token_by_chat_id_and_state(connection, str(msg.chat.id), 2)[0][0]
+IndexError: list index out of range
+Traceback (most recent call last):
+  File "bot.py", line 102, in <module>
+    bot.polling()
+  File "/usr/local/lib/python3.8/dist-packages/telebot/__init__.py", line 946, in polling
+    self.__threaded_polling(non_stop=non_stop, interval=interval, timeout=timeout, long_polling_timeout=long_polling_timeout,
+  File "/usr/local/lib/python3.8/dist-packages/telebot/__init__.py", line 1021, in __threaded_polling
+    raise e
+  File "/usr/local/lib/python3.8/dist-packages/telebot/__init__.py", line 977, in __threaded_polling
+    self.worker_pool.raise_exceptions()
+  File "/usr/local/lib/python3.8/dist-packages/telebot/util.py", line 154, in raise_exceptions
+    raise self.exception_info
+  File "/usr/local/lib/python3.8/dist-packages/telebot/util.py", line 98, in run
+    task(*args, **kwargs)
+  File "bot.py", line 73, in parse_price
+    token = database.get_prealert_token_by_chat_id_and_state(connection, str(msg.chat.id), 2)[0][0]
+IndexError: list index out of range
