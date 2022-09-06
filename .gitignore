@@ -1,4 +1,7 @@
 keys.py
-
+data.db
+watchdog.log
+bot.log
+nohup
 __pycache__
 old
