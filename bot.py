@@ -5,6 +5,16 @@ import database
 from help import token_supported
 
 
+user_states = {
+    "default": 0,
+    "add": 1,
+    "add-token": 2,
+    "add-token-price": 3,
+    "delete": 4,
+    "delete-id": 5
+}
+
+
 logging.basicConfig(filename="bot.log", level=logging.DEBUG, format="%(asctime)s %(message)s", filemode="w")
 
 bot = telebot.TeleBot(TG_API_KEY)
@@ -22,6 +32,20 @@ def add(msg):
     connection.commit()
 
 
+@bot.message_handler(commands=["delete"])
+def delete(msg):
+
+
+    my_alerts(msg)
+    bot.send_message(msg.chat.id, "Which alert number do you want to delete?")
+
+    bot.send_message(msg.chat.id, "This command is still under construction...")
+    #database.del_prealerts_by_chat_id(connection, str(msg.chat.id))
+    #database.add_prealert(connection, str(msg.chat.id), 1)
+    return None
+    #connection.commit()
+
+
 #@bot.message_handler(commands=["price"])
 #ef add(msg):
 #    bot.send_message(msg.chat.id, 'Which token?')
@@ -31,16 +55,16 @@ def add(msg):
 
 
 
-@bot.message_handler(commands=["myalerts"])
-def all_alerts(msg):
+@bot.message_handler(commands=["alerts"])
+def my_alerts(msg):
     alerts = database.get_alerts_by_chat_id(connection, msg.chat.id)
 
     alerts_string = "" 
 
-    index = 0;
+    #index = 0;
     for a in alerts:
-        index += 1
-        alerts_string += str(index) + ". " + a[3] + ": " + str(a[4]) + " $" + "\n"
+    #    index += 1
+        alerts_string += str(a[5]) + ". " + a[3] + ": " + str(a[4]) + " $" + "\n"
 
     if len(alerts_string) == 0: 
        bot.send_message(msg.chat.id, "No alerts yet created!")
@@ -90,7 +114,8 @@ def parse_price(msg):
          return None
 
     try: 
-        database.add_alert(connection, str(msg.chat.id), msg.from_user.username, token, msg.text)
+        sequence_id = database.get_max_sequence_id_by_chat_id(connection, msg.chat.id)[0][0] + 1
+        database.add_alert(connection, str(msg.chat.id), msg.from_user.username, token, msg.text, sequence_id)
     except Exception as e: 
         if "UNIQUE constraint failed" in str(e):
             bot.send_message(msg.chat.id, 'You already have an alert with these parameters!')

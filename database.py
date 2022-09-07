@@ -1,7 +1,7 @@
 import sqlite3
 
 
-CREATE_TABLE_ALERTS = "CREATE TABLE IF NOT EXISTS alerts (id INTEGER PRIMARY KEY, chat_id INTEGER, username TEXT, token TEXT NOT NULL, target_price INTEGER, UNIQUE (chat_id, token, target_price));"
+CREATE_TABLE_ALERTS = "CREATE TABLE IF NOT EXISTS alerts (id INTEGER PRIMARY KEY, chat_id INTEGER, username TEXT, token TEXT NOT NULL, target_price INTEGER, sequence_id INTEGER, UNIQUE (chat_id, token, target_price));"
 CREATE_TABLE_PREALERTS = "CREATE TABLE IF NOT EXISTS prealerts (id INTEGER PRIMARY KEY, chat_id INTEGER, token TEXT, state INTEGER);"
 CREATE_TABLE_PRICELOG = "CREATE TABLE IF NOT EXISTS pricelog (token TEXT PRIMARY_KEY, price_old REAL, price_new REAL);"
 CREATE_TABLE_ALERTSLOG = "CREATE TABLE IF NOT EXISTS alertslog (id INTEGER, chat_id INTEGER, username TEXT, token TEXT NOT NULL, target_price INTEGER, msg TEXT, time TEXT);"
@@ -10,9 +10,11 @@ GET_PREALERT_TOKEN_BY_CHAT_ID_AND_STATE = "SELECT token FROM prealerts WHERE cha
 GET_PRICE_NEW_BY_TOKEN = "SELECT price_new FROM pricelog WHERE token = ?;"
 GET_ALERTS_BY_TARGET_PRICE_NOT_NULL = "SELECT * FROM alerts WHERE target_price IS NOT NULL;"
 GET_PRICELOG_BY_TOKEN = "SELECT * FROM pricelog WHERE token = ?;"
-GET_ALERTS_BY_CHAT_ID = "SELECT * FROM alerts WHERE chat_id = ? ORDER BY ID;"
-GET_PREALERT_WITH_STATE_1 = "SELECT * FROM prealerts where chat_id = ? and state = 1"
-GET_ALL_CHATS = "SELECT DISTINCT chat_id FROM alerts;"
+GET_ALERTS_BY_CHAT_ID = "SELECT * FROM alerts WHERE chat_id = ? ORDER BY sequence_id;"
+GET_PREALERT_WITH_STATE_1 = "SELECT * FROM prealerts where chat_id = ? and state = 1;"
+GET_ALL_CHATS = "SELECT DISTINCT chat_id FROM alertslog;"
+GET_MAX_SEQUENCE_ID_BY_CHAT_ID = "SELECT IFNULL(MAX(sequence_id), 0) sequence_id FROM alerts WHERE chat_id = ?;"
+
 
 SET_PRICE_OLD_TO_PRICE_NEW_BY_TOKEN = "UPDATE pricelog SET price_old = price_new WHERE token = ?;"
 SET_PRICE_NEW_BY_TOKEN = "UPDATE pricelog SET price_new = ? WHERE token = ?;"
@@ -22,7 +24,7 @@ DEL_ALERT_BY_ID = "DELETE FROM alerts WHERE id = ?;"
 DEL_PREALERT_BY_CHAT_ID_STATE = "DELETE FROM prealerts WHERE chat_id = ? AND state = ?;"
 DEL_PREALERTS_BY_CHAT_ID = "DELETE FROM prealerts WHERE chat_id = ? AND state in (1, 2);"
 
-ADD_ALERT = "INSERT INTO alerts (chat_id, username, token, target_price) VALUES (?, ?, ?, ?);"
+ADD_ALERT = "INSERT INTO alerts (chat_id, username, token, target_price, sequence_id) VALUES (?, ?, ?, ?, ?);"
 ADD_PREALERT = "INSERT INTO prealerts (chat_id, state) VALUES (?, ?);"
 ADD_EMPTY_TOKEN_ROW = "INSERT INTO pricelog VALUES (?, 0, 0);"
 ADD_ALERTLOG = "INSERT INTO alertslog VALUES (?, ?, ?, ?, ?, ?, ?)"
@@ -94,9 +96,9 @@ def set_prealert_state_2(connection, token, chat_id):
     with connection:
         connection.execute(SET_PREALERT_STATE_2, (token, chat_id))
 
-def add_alert(connection, chat_id, username, token, target_price):
+def add_alert(connection, chat_id, username, token, target_price, sequence_id):
     with connection:
-        connection.execute(ADD_ALERT, (chat_id, username, token, target_price))
+        connection.execute(ADD_ALERT, (chat_id, username, token, target_price, sequence_id))
 
 def add_alertlog(connection, id, chat_id, username, token, target_price, msg, time):
     with connection:
@@ -121,3 +123,9 @@ def get_prealert_with_state_1(connection, chat_id):
 def get_all_chats(connection):
     with connection:
         return connection.execute(GET_ALL_CHATS).fetchall()
+
+
+def get_max_sequence_id_by_chat_id(connection, chat_id):
+    with connection:
+        return connection.execute(GET_MAX_SEQUENCE_ID_BY_CHAT_ID, (chat_id,)).fetchall()
+

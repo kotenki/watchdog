@@ -5,3 +5,4 @@ bot.log
 nohup.out
 __pycache__
 old
+data.db.bkp
