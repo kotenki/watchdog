@@ -12,8 +12,8 @@ bot = telebot.TeleBot(TG_API_KEY)
 connection = database.connect()
 #database.create_tables(connection)
 
-@bot.message_handler(commands=["start"])
-def start(msg):
+@bot.message_handler(commands=["add"])
+def add(msg):
     bot.send_message(msg.chat.id, 'Send me the token which you would like to be alerted on, e.g. BTC or ATOM')
 
     database.del_prealerts_by_chat_id(connection, str(msg.chat.id))
@@ -22,8 +22,16 @@ def start(msg):
     connection.commit()
 
 
+#@bot.message_handler(commands=["price"])
+#ef add(msg):
+#    bot.send_message(msg.chat.id, 'Which token?')
 
-@bot.message_handler(commands=["all"])
+#    database.del_prealerts_by_chat_id(connection, str(msg.chat.id))
+#    database.add_prealert(connection, str(msg.chat.id), 1)
+
+
+
+@bot.message_handler(commands=["myalerts"])
 def all_alerts(msg):
     alerts = database.get_alerts_by_chat_id(connection, msg.chat.id)
 
@@ -46,13 +54,13 @@ def parse_token(msg):
     token = token_supported(msg.text)
 
     if len(database.get_prealert_with_state_1(connection, msg.chat.id)) == 0:
-        bot.send_message(msg.chat.id, 'Oops! You should use /start command to add an alert')
+        bot.send_message(msg.chat.id, 'Oops! You should use /add command to add an alert')
         return None
 
     try: 
         current_price = database.get_price_new_by_token(connection, token)[0][0]
     except Exception as e:
-        bot.send_message(msg.chat.id, "Token " + msg.text + " is not supported. Try again with /start command!")
+        bot.send_message(msg.chat.id, "Token " + msg.text + " is not supported. Try again with /add command!")
         return None 
     
     database.set_prealert_state_2(connection, token, str(msg.chat.id))
@@ -67,13 +75,13 @@ def parse_price(msg):
     # Exception Handling:
     # token = database.get_prealert_token_by_chat_id_and_state(connection, str(msg.chat.id), 2)[0][0]
     # IndexError: list index out of range
-    # if out of range exception -> msg "Please use start command if you want yo add a new alert" 
+    # if out of range exception -> msg "Please use add command if you want yo add a new alert" 
     
     try: 
         token = database.get_prealert_token_by_chat_id_and_state(connection, str(msg.chat.id), 2)[0][0]
     except Exception as e:
         if "list index out of range" in str(e):
-            bot.send_message(msg.chat.id, 'Oops! You should use /start command to add an alert')
+            bot.send_message(msg.chat.id, 'Oops! You should use /add command to add an alert')
             return None
 
 
