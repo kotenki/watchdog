@@ -1,58 +1,52 @@
 import time
-import logging
+#import logging
 import telebot
 from keys import TG_API_KEY
-import sqlite3 as sl
+#import sqlite3 as sl
 from pycoingecko import CoinGeckoAPI
 from help import *
-from config import *
-import database
+from constants import *
+import database as db
 from datetime import datetime
 
 bot = telebot.TeleBot(TG_API_KEY)
-logging.basicConfig(filename="watchdog.log", level=logging.DEBUG, format="%(asctime)s %(message)s", filemode="w")
+#logging.basicConfig(filename="watchdog.log", level=logging.DEBUG, format="%(asctime)s %(message)s", filemode="w")
 
-connection = database.connect()
-
-database.create_tables(connection)
+conn = db.connect()
+db.create_tables(conn)
 
 for item in supported_tokens.items():
-    database.add_empty_token_row(connection, item[1])
-
+    db.add_empty_token_row(conn, item[1])
 
 cg = CoinGeckoAPI()
-
 
 def get_prices():
     tokens_string = ", ".join(supported_tokens.keys())
     return cg.get_price(ids=tokens_string.lower(), vs_currencies="usd")
 
-
-
-def update_price_log(prices_data):
+def set_prices(prices_data):
     for key in prices_data:
-        try:
-            database.set_price_old_to_price_new_by_token(connection, supported_tokens[key.upper()])
-        except Exception as e: 
-            logging.debug("Exception in set_price_old_to_price_new_by_token :" + str(e))
+        token = supported_tokens[key.upper()]
+        price = db.get_price(conn, token)[0]
 
-        database.set_price_new_by_token(connection, str(prices_data[key]["usd"]), supported_tokens[key.upper()])
-        connection.commit()
+        db.set_old_price(conn, price, token)
+
+        db.set_price(conn, str(prices_data[key]["usd"]), token)
 
 
 while True:
-    data = get_prices()
-    update_price_log(data)
+    set_prices(get_prices())
 
-    alerts = database.get_alerts_by_target_price_not_null(connection)
+    alerts = db.get_active_alerts(conn)
 
     for a in alerts:
-        alert_id, chat_id, username, token = a[0], a[1], a[2], a[3]
-        token_price_log = database.get_pricelog_by_token(connection, token)
-        price_old, price_new, price_target = token_price_log[0][1], token_price_log[0][2], a[4]
+        alert_id, chat_id, token, target = a[0], a[1], a[2], a[3]
+
+        token_price_log = db.get_pricelog_by_token(conn, token)
+        price_old, price_new = token_price_log[0][1], token_price_log[0][2]
         
 
-        if price_crossed(price_old, price_new, price_target):
+        if price_crossed(price_old, price_new, target):
             if price_increased(price_old, price_new):
                 direction = "has increased to"
                 circle_emoji = "\U0001F7E2"
@@ -60,13 +54,10 @@ while True:
                 direction = "has dropped to"
                 circle_emoji = "\U0001F534"
 
-            msg = token + " price " + direction + " " + str(price_new) + " $"
+            msg = token + " price " + direction + " " + str(price_new) + "$"
             bot.send_message(chat_id, circle_emoji + " " + msg)
-            database.add_alertlog(connection, alert_id, chat_id, username, token, price_target, msg, datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
-            try:
-                database.del_alert_by_id(connection, str(alert_id))
-            except: 
-                logging.debug("Exception when deleting alert")
-            connection.commit()
+
+            db.add_alertlog(conn, alert_id, chat_id, target, msg, datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
+            db.del_alert_by_id(conn, str(alert_id))
 
     time.sleep(10)

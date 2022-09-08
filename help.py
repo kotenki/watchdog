@@ -1,4 +1,4 @@
-from config import supported_tokens
+import constants
 
 def price_crossed(old, new, target):
     if (old <= target <= new) or (new <= target < old):
@@ -14,11 +14,11 @@ def price_increased(old, new):
         return False
 
 
-def token_supported(token):
+def format_token(token):
     token = token.upper()
-    for item in supported_tokens.items():
-        if token == item[0]:
+    for key, value in supported_tokens.items():
+        if token == key:
             return supported_tokens[token]
-        elif token == item[1]:
+        elif token == value:
             return token
     return None
