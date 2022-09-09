@@ -40,14 +40,13 @@ CREATE_TABLE_ALERTSLOG = """CREATE TABLE IF NOT EXISTS alertslog
                                 FOREIGN KEY(chatid) REFERENCES users(chatid)
                             )"""
 
-#CREATE_TABLE_PREALERTS = "CREATE TABLE IF NOT EXISTS prealerts (id INTEGER PRIMARY KEY, chat_id INTEGER, token TEXT, state INTEGER);"
-#CREATE_TABLE_PRICELOG = "CREATE TABLE IF NOT EXISTS pricelog (token TEXT PRIMARY_KEY, price_old REAL, price_new REAL);"
-#CREATE_TABLE_ALERTSLOG = "CREATE TABLE IF NOT EXISTS alertslog (id INTEGER, chat_id INTEGER, username TEXT, token TEXT NOT NULL, target_price INTEGER, msg TEXT, time TEXT);"
 
+ADD_EMPTY_TOKEN_ROW = "INSERT INTO price VALUES (?, 0, 0);"
 ADD_USER = "INSERT INTO users VALUES (?, ?, ?)"
 GET_USER_BY_CHATID = "SELECT * FROM users WHERE chatid = ?"
 SET_STATE_FOR_USER = "UPDATE users SET state = ? WHERE chatid = ?"
-GET_PRICE = "SELECT IFNULL(new, -1) new FROM price WHERE token = ?"
+#GET_PRICE = "SELECT IFNULL(new, -1) new FROM price WHERE token = ?"
+GET_PRICE = "SELECT new FROM price WHERE token = ?"
 GET_MAX_SEQUENCE_BY_CHATID = "SELECT IFNULL(MAX(sequence), 0) sequence FROM alerts WHERE chatid = ?"
 ADD_ALERT = "INSERT INTO alerts (chatid, token, pricetarget, sequence, state) VALUES (?, ?, ?, ?, ?)"
 GET_INACTIVE_ALERT_BY_CHATID = "SELECT * FROM alerts WHERE state = 0 AND chatid = ?"
@@ -66,6 +65,23 @@ GET_PRICELOG_BY_TOKEN = "SELECT * FROM price WHERE token = ?;"
 ADD_ALERTLOG = "INSERT INTO alertslog VALUES (?, ?, ?, ?, ?)"
 GET_ALERTS_SHIFT_SEQUENCE = "SELECT * FROM alerts WHERE chatid = ? AND sequence >= ?"
 ALERT_SHIFT_SEQUENCE = "UPDATE alerts SET sequence = ? WHERE id = ?"
+
+
+def connect():
+    return sqlite3.connect("data.db", check_same_thread=False)
+
+
+def create_tables(connection):
+    with connection:
+        connection.execute(CREATE_TABLE_ALERTS)
+        connection.execute(CREATE_TABLE_USERS)
+        connection.execute(CREATE_TABLE_PRICE)
+        connection.execute(CREATE_TABLE_ALERTSLOG)
+
+
+def add_empty_token_row(connection, token):
+    with connection:
+        connection.execute(ADD_EMPTY_TOKEN_ROW, (token,))
 
 
 def get_user_by_chatid(connection, chatid):

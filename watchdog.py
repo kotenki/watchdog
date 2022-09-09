@@ -8,6 +8,7 @@ from help import *
 from constants import *
 import database as db
 from datetime import datetime
+from bot import shift_sequence
 
 bot = telebot.TeleBot(TG_API_KEY)
 #logging.basicConfig(filename="watchdog.log", level=logging.DEBUG, format="%(asctime)s %(message)s", filemode="w")
@@ -40,7 +41,7 @@ while True:
     alerts = db.get_active_alerts(conn)
 
     for a in alerts:
-        alert_id, chat_id, token, target = a[0], a[1], a[2], a[3]
+        alert_id, chat_id, token, target, sequence = a[0], a[1], a[2], a[3], a[4]
 
         token_price_log = db.get_pricelog_by_token(conn, token)
         price_old, price_new = token_price_log[0][1], token_price_log[0][2]
@@ -59,5 +60,6 @@ while True:
 
             db.add_alertlog(conn, alert_id, chat_id, target, msg, datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
             db.del_alert_by_id(conn, str(alert_id))
+            shift_sequence(chat_id, sequence)
 
     time.sleep(10)

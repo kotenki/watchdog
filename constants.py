@@ -57,5 +57,6 @@ supported_tokens = {
                     "TETHER": "USDT",
                     "USD-COIN": "USDC",
                     "BINANCE-USD": "BUSD",
-                    "DAI": "DAI"
+                    "DAI": "DAI",
+                    "TERRAUSD": "USTC"
 }
