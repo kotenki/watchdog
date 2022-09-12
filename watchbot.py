@@ -22,7 +22,7 @@ def shift_sequence(conn, chat_id, sequence):
 @bot.message_handler(commands=["add"])
 def add(msg):
     chat_id = msg.chat.id
-    if db.get_user_by_chatid(conn, msg.chat.id) == None:
+    if db.get_user_by_chatid(conn, msg.chat.id) is None:
         db.add_user(conn, chat_id, msg.from_user.username, user_states["add"])
     else:
         db.set_state_for_user(conn, chat_id, user_states["add"])
@@ -73,7 +73,7 @@ def alerts(msg):
     return alerts_string
 
 
-@bot.message_handler(regexp = "[a-zA-Z]")
+@bot.message_handler(regexp = "[a-zA-Zа-яА-Я]")
 def input_text(msg):
     chat_id = msg.chat.id
     user_state = db.get_user_by_chatid(conn, chat_id)[2]
@@ -82,18 +82,13 @@ def input_text(msg):
         bot.send_message(chat_id, "Use /add command to add a new alert")
         return None
 
-    # if token not supported -> reply "Token not supported"
     token = msg.text.upper()
     last_price = db.get_price(conn, token)
 
-    # !!! Add exception handling:
-    #    last_price = db.get_price(conn, token)[0]
-    # TypeError: 'NoneType' object is not subscriptable
-    
-    # if last_price == -1:
-    if last_price == None:
-       bot.send_message(chat_id, "Token " + token + " is not supported")
-       return None
+
+    if last_price is None:
+        bot.send_message(chat_id, "Token " + token + " is not supported")
+        return None
 
     inactive_alert_id = db.get_inactive_alert_by_chatid(conn, chat_id)[0]
 
