@@ -1,5 +1,6 @@
 import time
-#import logging
+import logging
+#logging.basicConfig(filename="watchdog.log", level=logging.DEBUG, format="%(asctime)s %(message)s", filemode="w")
 import telebot
 from keys import TG_API_KEY
 #import sqlite3 as sl
@@ -8,13 +9,22 @@ from help import *
 from constants import *
 import database as db
 from datetime import datetime
-from bot import shift_sequence
+#from watchbot import shift_sequence
 
 bot = telebot.TeleBot(TG_API_KEY)
-#logging.basicConfig(filename="watchdog.log", level=logging.DEBUG, format="%(asctime)s %(message)s", filemode="w")
+
 
 conn = db.connect()
 db.create_tables(conn)
+
+# TO BE REFACTORED: 
+def shift_sequence(conn, chat_id, sequence):
+    shift_increment = 0
+    alerts_shift_sequence = db.get_alerts_shift_sequence(conn, chat_id, sequence)
+
+    for a in alerts_shift_sequence:
+        db.alert_shift_sequence(conn, int(sequence) + shift_increment, a[0])
+        shift_increment += 1
 
 for item in supported_tokens.items():
     db.add_empty_token_row(conn, item[1])
@@ -60,6 +70,6 @@ while True:
 
             db.add_alertlog(conn, alert_id, chat_id, target, msg, datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
             db.del_alert_by_id(conn, str(alert_id))
-            shift_sequence(chat_id, sequence)
+            shift_sequence(conn, chat_id, sequence)
 
     time.sleep(10)

@@ -10,7 +10,7 @@ bot = telebot.TeleBot(TG_API_KEY)
 conn = db.connect()
 
 
-def shift_sequence(chat_id, sequence):
+def shift_sequence(conn, chat_id, sequence):
     shift_increment = 0
     alerts_shift_sequence = db.get_alerts_shift_sequence(conn, chat_id, sequence)
 
@@ -108,20 +108,19 @@ def input_numbers(msg):
     chat_id = msg.chat.id
     user_state = db.get_user_by_chatid(conn, chat_id)[2]
 
+    if float(msg.text) <= 0: 
+        bot.send_message(chat_id, 'Please type a positive number')
+        return None
+
     if user_state == user_states["delete"]:
         sequence = msg.text
         db.del_alerts_by_chatid_and_sequence(conn, chat_id, sequence)
         db.set_state_for_user(conn, chat_id, user_states["default"])
         bot.send_message(chat_id, 'Alert removed!')
-        shift_sequence(chat_id, sequence)
+        shift_sequence(conn, chat_id, sequence)
 
     elif user_state == user_states["add-token"]:
         price = msg.text
-
-        if float(price) <= 0: 
-            bot.send_message(chat_id, 'Please type a valid price:')
-            return None
-
         inactive_alert_id = db.get_inactive_alert_by_chatid(conn, chat_id)[0]
         try: 
             db.set_alert_price(conn, price, inactive_alert_id)
@@ -140,4 +139,7 @@ def input_numbers(msg):
     
     return None
    
-bot.polling()
+# bot.polling()
+# requests.exceptions.ReadTimeout: HTTPSConnectionPool(host='api.telegram.org', port=443): Read timed out. (read timeout=25)
+
+bot.infinity_polling(timeout=25, long_polling_timeout = 5)
