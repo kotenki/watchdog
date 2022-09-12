@@ -10,7 +10,7 @@ bot = telebot.TeleBot(TG_API_KEY)
 
 connection = database.connect()
 
-
+# add function get_all_chats to database lib
 chats = database.get_all_chats(connection)
 
 for c in chats: 
