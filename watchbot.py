@@ -44,10 +44,11 @@ def add(msg):
 def delete(msg):
 
     chat_id = msg.chat.id
-    alerts(msg)
+    alerts_string = alerts(msg)
 
-    db.set_state_for_user(conn, chat_id, user_states["delete"])
-    bot.send_message(msg.chat.id, "Which alert number do you want to delete?")
+    if len(alerts_string) != 0: 
+        db.set_state_for_user(conn, chat_id, user_states["delete"])
+        bot.send_message(msg.chat.id, "Which alert number do you want to delete?")
 
     return None
 
@@ -65,10 +66,11 @@ def alerts(msg):
 
     if len(alerts_string) == 0: 
        bot.send_message(chat_id, "No alerts yet created!")
+    
     else:  
         bot.send_message(chat_id, alerts_string)    
 
-    return None
+    return alerts_string
 
 
 @bot.message_handler(regexp = "[a-zA-Z]")
