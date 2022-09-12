@@ -59,13 +59,13 @@ while True:
 
         if price_crossed(price_old, price_new, target):
             if price_increased(price_old, price_new):
-                direction = "has increased to"
+                direction = "увеличилась до"
                 circle_emoji = "\U0001F7E2"
             else:
-                direction = "has dropped to"
+                direction = "снизилась до"
                 circle_emoji = "\U0001F534"
 
-            msg = token + " price " + direction + " " + str(price_new) + "$"
+            msg = "Цена " + token + " " + direction + " " + str(price_new) + "$"
             bot.send_message(chat_id, circle_emoji + " " + msg)
 
             db.add_alertlog(conn, alert_id, chat_id, target, msg, datetime.now().strftime("%d/%m/%Y %H:%M:%S"))

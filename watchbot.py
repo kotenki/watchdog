@@ -35,7 +35,7 @@ def add(msg):
     sequence = db.get_max_sequence_by_chatid(conn, chat_id)[0] + 1
     db.add_alert(conn, chat_id, None, None, sequence, alert_states["inactive"])
 
-    bot.send_message(chat_id, "Which token you would like to be alerted on, e.g. BTC, ATOM")
+    bot.send_message(chat_id, "О цене какого токена добавить уведомление (например, BTC, ATOM, SOL)?")
 
     return None
   
@@ -48,7 +48,7 @@ def delete(msg):
 
     if len(alerts_string) != 0: 
         db.set_state_for_user(conn, chat_id, user_states["delete"])
-        bot.send_message(msg.chat.id, "Which alert number do you want to delete?")
+        bot.send_message(msg.chat.id, "Какое по счету уведомление удалить?")
 
     return None
 
@@ -65,7 +65,7 @@ def alerts(msg):
         alerts_string += str(a[4]) + ". " + a[2] + ": " + str(a[3]) + "$" + "\n"
 
     if len(alerts_string) == 0: 
-       bot.send_message(chat_id, "No alerts yet created!")
+       bot.send_message(chat_id, "Вы пока не создали уведомлений.")
     
     else:  
         bot.send_message(chat_id, alerts_string)    
@@ -79,7 +79,7 @@ def input_text(msg):
     user_state = db.get_user_by_chatid(conn, chat_id)[2]
 
     if user_state != user_states["add"]:
-        bot.send_message(chat_id, "Use /add command to add a new alert")
+        bot.send_message(chat_id, "Используйте команду /add чтобы создать новое уведомление.")
         return None
 
     token = msg.text.upper()
@@ -87,7 +87,7 @@ def input_text(msg):
 
 
     if last_price is None:
-        bot.send_message(chat_id, "Token " + token + " is not supported")
+        bot.send_message(chat_id, "Токен " + token + " не поддерживается.")
         return None
 
     inactive_alert_id = db.get_inactive_alert_by_chatid(conn, chat_id)[0]
@@ -95,8 +95,8 @@ def input_text(msg):
     db.set_alert_token(conn, token, inactive_alert_id)
     db.set_state_for_user(conn, chat_id, user_states["add-token"])
 
-    bot.send_message(chat_id, "Current " + token + " price: " + str(last_price[0]) + "$")
-    bot.send_message(chat_id, 'Which price would you like to be notified on?')
+    bot.send_message(chat_id, "Текущая цена " + token + ": " + str(last_price[0]) + "$")
+    bot.send_message(chat_id, 'О какой цене вас уведомить?')
 
     return None
 
@@ -106,14 +106,14 @@ def input_numbers(msg):
     user_state = db.get_user_by_chatid(conn, chat_id)[2]
 
     if float(msg.text) <= 0: 
-        bot.send_message(chat_id, 'Please type a positive number')
+        bot.send_message(chat_id, 'Введите положительное число.')
         return None
 
     if user_state == user_states["delete"]:
         sequence = msg.text
         db.del_alerts_by_chatid_and_sequence(conn, chat_id, sequence)
         db.set_state_for_user(conn, chat_id, user_states["default"])
-        bot.send_message(chat_id, 'Alert removed!')
+        bot.send_message(chat_id, 'Уведомление удалено.')
         shift_sequence(conn, chat_id, sequence)
 
     elif user_state == user_states["add-token"]:
@@ -123,16 +123,16 @@ def input_numbers(msg):
             db.set_alert_price(conn, price, inactive_alert_id)
         except Exception as e:
             if "UNIQUE constraint failed" in str(e):
-                bot.send_message(chat_id, 'You already have an alert with these parameters!')
+                bot.send_message(chat_id, 'У вас уже есть уведомление с такими параметрами!')
                 return None
 
         db.set_alert_state(conn, alert_states["active"], inactive_alert_id)
         db.set_state_for_user(conn, chat_id, user_states["default"])
 
-        bot.send_message(msg.chat.id, 'Alert created!')
+        bot.send_message(msg.chat.id, 'Уведомление добавлено!')
 
     else:
-        bot.send_message(msg.chat.id, "Use /add command to add a new alert")
+        bot.send_message(msg.chat.id, "Используйте команду /add чтобы создать новое уведомление.")
     
     return None
    
