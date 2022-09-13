@@ -72,37 +72,71 @@ def alerts(msg):
 
     return alerts_string
 
+# Input: btc 20000
+@bot.message_handler(regexp = "[a-zA-Z]+\s+[0-9]+")
+def quick_command_token_price(msg):
+    chat_id = msg.chat.id
+    input_list = msg.text.upper().split()
+
+    token, target = input_list[0], input_list[1]
+
+    if db.get_price(conn, token) is None: 
+        bot.send_message(chat_id, "Токен " + token + " не поддерживается.")
+        return None 
+
+    if float(target) <= 0:
+        bot.send_message(chat_id, 'Введите положительное число.')
+        return None
+
+    db.del_inactive_alerts_by_chatid(conn, chat_id)
+    sequence = db.get_max_sequence_by_chatid(conn, chat_id)[0] + 1
+    try: 
+        db.add_alert(conn, chat_id, token, target, sequence, alert_states["active"])
+    except Exception as e:
+        if "UNIQUE constraint failed" in str(e):
+            bot.send_message(chat_id, 'У вас уже есть уведомление с такими параметрами!')
+            return None
+    
+    db.set_state_for_user(conn, chat_id, user_states["default"])
+    bot.send_message(msg.chat.id, 'Уведомление добавлено!')
+
 
 @bot.message_handler(regexp = "[a-zA-Zа-яА-Я]")
 def input_text(msg):
     chat_id = msg.chat.id
     user_state = db.get_user_by_chatid(conn, chat_id)[2]
 
-    if user_state == user_states["add-token"]:
-        bot.send_message(chat_id, "Введите корректную сумму.")
-        return None
-    elif user_state == user_states["delete"]:
-        bot.send_message(chat_id, "Введите корректный номер.")
-        return None
-    elif user_state != user_states["add"]:
-        bot.send_message(chat_id, "Используйте команду /add чтобы создать новое уведомление.")
-        return None
-
     token = msg.text.upper()
     last_price = db.get_price(conn, token)
 
+    if user_state == user_states["default"]:
+        if last_price is not None:
+            bot.send_message(chat_id, "Текущая цена " + token + ": " + str(last_price[0]) + "$")
+            bot.send_message(chat_id, "Используйте команду /add чтобы создать новое уведомление или быструю команду '<токен> <цена>' (например: btc 30000)")
+        else: 
+            bot.send_message(chat_id, "Токен " + token + " не поддерживается.")
 
-    if last_price is None:
-        bot.send_message(chat_id, "Токен " + token + " не поддерживается.")
-        return None
+    elif user_state == user_states["add-token"]:
+        bot.send_message(chat_id, "Введите корректную сумму.")
 
-    inactive_alert_id = db.get_inactive_alert_by_chatid(conn, chat_id)[0]
+    elif user_state == user_states["delete"]:
+        bot.send_message(chat_id, "Введите корректный номер.")
 
-    db.set_alert_token(conn, token, inactive_alert_id)
-    db.set_state_for_user(conn, chat_id, user_states["add-token"])
+    elif user_state == user_states["add"]:
+        if last_price is not None:
+            inactive_alert_id = db.get_inactive_alert_by_chatid(conn, chat_id)[0]
 
-    bot.send_message(chat_id, "Текущая цена " + token + ": " + str(last_price[0]) + "$")
-    bot.send_message(chat_id, 'О какой цене вас уведомить?')
+            db.set_alert_token(conn, token, inactive_alert_id)
+            db.set_state_for_user(conn, chat_id, user_states["add-token"])
+
+            bot.send_message(chat_id, "Текущая цена " + token + ": " + str(last_price[0]) + "$")
+            bot.send_message(chat_id, 'О какой цене вас уведомить?')
+
+        else:
+            bot.send_message(chat_id, "Токен " + token + " не поддерживается.")
+
+    else:    
+        bot.send_message(chat_id, "Используйте команду /add чтобы создать новое уведомление.")
 
     return None
 
@@ -117,10 +151,15 @@ def input_numbers(msg):
 
     if user_state == user_states["delete"]:
         sequence = msg.text
+
+        if db.get_active_alert_by_chatid_sequence(conn, chat_id, sequence) is None: 
+            bot.send_message(chat_id, 'Введите порядковый номер из списка выше.')
+            return None 
+
         db.del_alerts_by_chatid_and_sequence(conn, chat_id, sequence)
         db.set_state_for_user(conn, chat_id, user_states["default"])
-        bot.send_message(chat_id, 'Уведомление удалено.')
         shift_sequence(conn, chat_id, sequence)
+        bot.send_message(chat_id, 'Уведомление удалено.')
 
     elif user_state == user_states["add-token"]:
         price = msg.text

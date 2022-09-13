@@ -51,9 +51,11 @@ GET_MAX_SEQUENCE_BY_CHATID = "SELECT IFNULL(MAX(sequence), 0) sequence FROM aler
 ADD_ALERT = "INSERT INTO alerts (chatid, token, pricetarget, sequence, state) VALUES (?, ?, ?, ?, ?)"
 GET_INACTIVE_ALERT_BY_CHATID = "SELECT * FROM alerts WHERE state = 0 AND chatid = ?"
 GET_ACTIVE_ALERTS_BY_CHATID = "SELECT * FROM alerts WHERE state = 1 AND chatid = ? ORDER BY sequence"
+GET_ACTIVE_ALERT_BY_CHATID_SEQUENCE = "SELECT * FROM alerts WHERE chatid = ? AND sequence = ?"
 DEL_ALERTS_BY_CHATID_AND_SEQUENCE = "DELETE FROM alerts WHERE chatid = ? AND sequence = ?"
 SET_ALERT_DETAILS = "UPDATE alerts SET (token, pricetarget, sequence, state) = (?, ?, ?, ?)"
 DEL_ALERT_BY_ID = "DELETE FROM alerts WHERE id = ?"
+DEL_INACTIVE_ALERTS_BY_CHATID = "DELETE FROM alerts WHERE chatid = ? AND state != 1"
 SET_ALERT_TOKEN = "UPDATE alerts SET token = ? WHERE id = ?"
 SET_ALERT_PRICE = "UPDATE alerts SET pricetarget = ? WHERE id = ?"
 SET_ALERT_SEQUENCE = "UPDATE alerts SET sequence = ? WHERE id = ?"
@@ -196,6 +198,13 @@ def alert_shift_sequence(connection, new_sequence, id):
         connection.commit()
 
 
-#def get_count_price(connection):
-#    with connection:
-#        return connection.execute(GET_COUNT_PRICE).fetchall()
+def get_active_alert_by_chatid_sequence(connection, chatid, sequence):
+    with connection:
+        return connection.execute(GET_ACTIVE_ALERT_BY_CHATID_SEQUENCE, (chatid, sequence)).fetchone()
+
+
+def del_inactive_alerts_by_chatid(connection, chatid):
+    with connection:
+        connection.execute(DEL_INACTIVE_ALERTS_BY_CHATID, (chatid,))
+        connection.commit()
+        
