@@ -65,6 +65,7 @@ GET_PRICELOG_BY_TOKEN = "SELECT * FROM price WHERE token = ?;"
 ADD_ALERTLOG = "INSERT INTO alertslog VALUES (?, ?, ?, ?, ?)"
 GET_ALERTS_SHIFT_SEQUENCE = "SELECT * FROM alerts WHERE chatid = ? AND sequence >= ?"
 ALERT_SHIFT_SEQUENCE = "UPDATE alerts SET sequence = ? WHERE id = ?"
+GET_COUNT_PRICE = "SELECT COUNT(*) FROM price"
 
 
 def connect():
@@ -193,3 +194,8 @@ def alert_shift_sequence(connection, new_sequence, id):
     with connection:
         return connection.execute(ALERT_SHIFT_SEQUENCE, (new_sequence, id))
         connection.commit()
+
+
+#def get_count_price(connection):
+#    with connection:
+#        return connection.execute(GET_COUNT_PRICE).fetchall()

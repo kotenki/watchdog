@@ -3,13 +3,12 @@ import logging
 #logging.basicConfig(filename="watchdog.log", level=logging.DEBUG, format="%(asctime)s %(message)s", filemode="w")
 import telebot
 from keys import TG_API_KEY
-#import sqlite3 as sl
 from pycoingecko import CoinGeckoAPI
 from help import *
 from constants import *
 import database as db
 from datetime import datetime
-#from watchbot import shift_sequence
+#rom watchbot import shift_sequence
 
 bot = telebot.TeleBot(TG_API_KEY)
 
@@ -26,9 +25,6 @@ def shift_sequence(conn, chat_id, sequence):
         db.alert_shift_sequence(conn, int(sequence) + shift_increment, a[0])
         shift_increment += 1
 
-for item in supported_tokens.items():
-    db.add_empty_token_row(conn, item[1])
-
 cg = CoinGeckoAPI()
 
 def get_prices():
@@ -38,10 +34,12 @@ def get_prices():
 def set_prices(prices_data):
     for key in prices_data:
         token = supported_tokens[key.upper()]
+
+        if len(db.get_pricelog_by_token(conn, token)) == 0:
+            db.add_empty_token_row(conn, token)
+
         price = db.get_price(conn, token)[0]
-
         db.set_old_price(conn, price, token)
-
         db.set_price(conn, str(prices_data[key]["usd"]), token)
 
 
