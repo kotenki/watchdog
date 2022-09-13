@@ -78,7 +78,10 @@ def input_text(msg):
     chat_id = msg.chat.id
     user_state = db.get_user_by_chatid(conn, chat_id)[2]
 
-    if user_state != user_states["add"]:
+    if user_state == user_states["add-token"]:
+         bot.send_message(chat_id, "Введите корректную сумму.")
+         return None
+    elif user_state != user_states["add"]:
         bot.send_message(chat_id, "Используйте команду /add чтобы создать новое уведомление.")
         return None
 
