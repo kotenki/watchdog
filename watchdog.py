@@ -1,6 +1,6 @@
 import time
 import logging
-#logging.basicConfig(filename="watchdog.log", level=logging.DEBUG, format="%(asctime)s %(message)s", filemode="w")
+logging.basicConfig(filename="watchdog.log", level=logging.DEBUG, format="%(asctime)s %(message)s", filemode="w")
 import telebot
 from keys import TG_API_KEY
 from pycoingecko import CoinGeckoAPI
@@ -44,7 +44,12 @@ def set_prices(prices_data):
 
 
 while True:
-    set_prices(get_prices())
+
+    try:
+        set_prices(get_prices())
+    except Exception as e:
+        logging.warning("Exception in CoinGecko API call: " + str(e))
+        continue
 
     alerts = db.get_active_alerts(conn)
 

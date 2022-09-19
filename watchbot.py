@@ -124,9 +124,11 @@ def input_text(msg):
 
     elif user_state == user_states["add-token"]:
         bot.send_message(chat_id, "Цена должна быть положительной. Попробуй еще раз.")
+        db.set_state_for_user(conn, chat_id, user_states["default"])
 
     elif user_state == user_states["delete"]:
         bot.send_message(chat_id, "Некорректный номер. Попробуйте еще раз.")
+        db.set_state_for_user(conn, chat_id, user_states["default"])
 
     elif user_state == user_states["add"]:
         if last_price is not None:
